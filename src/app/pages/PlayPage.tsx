@@ -12,7 +12,7 @@ import type {
 } from '../../domain/lottery/types';
 import {
   drawsForGame,
-  historicalDrawSnapshot,
+  getHistoricalDrawRange,
   historicalGameConfig,
   type HistoricalGameId,
 } from '../../data/history/historicalDraws';
@@ -219,16 +219,13 @@ export function PlayPage(props: PlayPageProps) {
   const [revealedCount, setRevealedCount] = useState(0);
   const historicalGameId: HistoricalGameId | undefined =
     definition.id === 'keno' ? undefined : definition.id;
+  const historicalRange = getHistoricalDrawRange();
   const historyDraws = useMemo(
     () =>
       historicalGameId
-        ? drawsForGame(
-            historicalGameId,
-            historicalDrawSnapshot.range.from,
-            historicalDrawSnapshot.range.to,
-          )
+        ? drawsForGame(historicalGameId, historicalRange.from, historicalRange.to)
         : [],
-    [historicalGameId],
+    [historicalGameId, historicalRange.from, historicalRange.to],
   );
   const selectionHistory = useMemo<readonly SelectionHistory[]>(() => {
     if (!advancedReport) return [];
@@ -977,8 +974,8 @@ export function PlayPage(props: PlayPageProps) {
                     {historyDraws.length > 0 && historicalGameId && (
                       <span>
                         {fr
-                          ? `${historicalGameConfig[historicalGameId].label} · ${historyDraws.length} tirages · du ${historicalDrawSnapshot.range.from} au ${historicalDrawSnapshot.range.to}`
-                          : `${historicalGameConfig[historicalGameId].label} · ${historyDraws.length} draws · ${historicalDrawSnapshot.range.from} to ${historicalDrawSnapshot.range.to}`}
+                          ? `${historicalGameConfig[historicalGameId].label} · ${historyDraws.length} tirages · du ${historicalRange.from} au ${historicalRange.to}`
+                          : `${historicalGameConfig[historicalGameId].label} · ${historyDraws.length} draws · ${historicalRange.from} to ${historicalRange.to}`}
                       </span>
                     )}
                   </div>

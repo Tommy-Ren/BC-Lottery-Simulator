@@ -77,6 +77,97 @@ interface Snapshot {
 
 export const historicalDrawSnapshot = snapshotJson as Snapshot;
 
+const liveDrawStorageKey = 'bc-lottery-live-history-v1';
+
+function isHistoricalGameId(value: unknown): value is HistoricalGameId {
+  return typeof value === 'string' && value in historicalGameConfig;
+}
+
+function isHistoricalDraw(value: unknown): value is HistoricalDraw {
+  if (typeof value !== 'object' || value === null) return false;
+  const draw = value as Record<string, unknown>;
+  return (
+    isHistoricalGameId(draw.gameId) &&
+    Number.isSafeInteger(draw.drawNumber) &&
+    typeof draw.drawDate === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(draw.drawDate) &&
+    Array.isArray(draw.mainNumbers) &&
+    draw.mainNumbers.every((number: unknown) => Number.isInteger(number)) &&
+    Array.isArray(draw.extraNumbers) &&
+    draw.extraNumbers.every((number: unknown) => Number.isInteger(number))
+  );
+}
+
+function loadLiveDraws(): HistoricalDraw[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved: unknown = JSON.parse(
+      window.localStorage.getItem(liveDrawStorageKey) ?? '[]',
+    ) as unknown;
+    if (!Array.isArray(saved)) return [];
+    return (saved as unknown[]).filter(isHistoricalDraw);
+  } catch {
+    return [];
+  }
+}
+
+let liveDraws = loadLiveDraws();
+
+export function getHistoricalDraws(): readonly HistoricalDraw[] {
+  return [...historicalDrawSnapshot.draws, ...liveDraws];
+}
+
+export function getHistoricalDrawRange(): { readonly from: string; readonly to: string } {
+  const dates = getHistoricalDraws().map((draw) => draw.drawDate);
+  return {
+    from: dates.reduce(
+      (minimum, date) => (date < minimum ? date : minimum),
+      dates[0] ?? historicalDrawSnapshot.range.from,
+    ),
+    to: dates.reduce(
+      (maximum, date) => (date > maximum ? date : maximum),
+      dates[0] ?? historicalDrawSnapshot.range.to,
+    ),
+  };
+}
+
+export function mergeLiveHistoricalDraws(incoming: readonly HistoricalDraw[]): number {
+  const merged = new Map(liveDraws.map((draw) => [`${draw.gameId}:${draw.drawDate}`, draw]));
+  let added = 0;
+  for (const draw of incoming) {
+    if (
+      !isHistoricalGameId(draw.gameId) ||
+      !Number.isSafeInteger(draw.drawNumber) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(draw.drawDate) ||
+      !Array.isArray(draw.mainNumbers) ||
+      !Array.isArray(draw.extraNumbers)
+    ) {
+      continue;
+    }
+    const key = `${draw.gameId}:${draw.drawDate}`;
+    if (!merged.has(key)) added += 1;
+    merged.set(key, {
+      ...draw,
+      mainNumbers: Array.from(draw.mainNumbers as readonly number[]).sort(
+        (left, right) => left - right,
+      ),
+      extraNumbers: Array.from(draw.extraNumbers as readonly number[]),
+    });
+  }
+  liveDraws = [...merged.values()].sort(
+    (left, right) =>
+      left.drawDate.localeCompare(right.drawDate) || left.gameId.localeCompare(right.gameId),
+  );
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(liveDrawStorageKey, JSON.stringify(liveDraws));
+    } catch {
+      // Current-session results remain usable even if local storage is full or disabled.
+    }
+  }
+  return added;
+}
+
 function selectedDrawNumbers(draw: HistoricalDraw, kind: 'main' | 'bonus'): number[] {
   if (kind === 'main') return [...draw.mainNumbers];
   return typeof draw.bonusNumber === 'number' ? [draw.bonusNumber] : [];
@@ -84,19 +175,24 @@ function selectedDrawNumbers(draw: HistoricalDraw, kind: 'main' | 'bonus'): numb
 
 export function drawsForGame(
   gameId: HistoricalGameId,
-  from = historicalDrawSnapshot.range.from,
-  to = historicalDrawSnapshot.range.to,
+  from?: string,
+  to?: string,
 ): readonly HistoricalDraw[] {
-  return historicalDrawSnapshot.draws
-    .filter((draw) => draw.gameId === gameId && draw.drawDate >= from && draw.drawDate <= to)
+  const range = getHistoricalDrawRange();
+  const startDate = from ?? range.from;
+  const endDate = to ?? range.to;
+  return getHistoricalDraws()
+    .filter(
+      (draw) => draw.gameId === gameId && draw.drawDate >= startDate && draw.drawDate <= endDate,
+    )
     .sort((left, right) => right.drawDate.localeCompare(left.drawDate));
 }
 
 export function numberFrequencies(
   gameId: HistoricalGameId,
   kind: 'main' | 'bonus' = 'main',
-  from = historicalDrawSnapshot.range.from,
-  to = historicalDrawSnapshot.range.to,
+  from?: string,
+  to?: string,
 ): readonly FrequencyEntry[] {
   const config = historicalGameConfig[gameId];
   const draws = drawsForGame(gameId, from, to);
@@ -120,8 +216,8 @@ export function numberFrequencies(
 export function rankNumberFrequencies(
   gameId: HistoricalGameId,
   kind: 'main' | 'bonus',
-  from: string,
-  to: string,
+  from = getHistoricalDrawRange().from,
+  to = getHistoricalDrawRange().to,
 ): readonly NumberRankEntry[] {
   const draws = [...drawsForGame(gameId, from, to)].sort((left, right) =>
     left.drawDate.localeCompare(right.drawDate),

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   analyzeNumberCombinations,
   drawsForGame,
-  historicalDrawSnapshot,
+  getHistoricalDrawRange,
   historicalGameConfig,
   type HistoricalGameId,
 } from '../../data/history/historicalDraws';
@@ -49,6 +49,7 @@ export function HistoricalDataPage({
   const [query, setQuery] = useState('');
   const [drawPage, setDrawPage] = useState(0);
   const [combinationPage, setCombinationPage] = useState(0);
+  const dateRange = getHistoricalDrawRange();
 
   const validRange = Boolean(from && to && from <= to);
   const draws = useMemo(
@@ -138,8 +139,8 @@ export function HistoricalDataPage({
           <label>
             {fr ? 'Du' : 'From'}
             <input
-              max={historicalDrawSnapshot.range.to}
-              min={historicalDrawSnapshot.range.from}
+              max={dateRange.to}
+              min={dateRange.from}
               onChange={(event) => {
                 setFrom(event.target.value);
                 resetPagination();
@@ -151,8 +152,8 @@ export function HistoricalDataPage({
           <label>
             {fr ? 'Au' : 'To'}
             <input
-              max={historicalDrawSnapshot.range.to}
-              min={historicalDrawSnapshot.range.from}
+              max={dateRange.to}
+              min={dateRange.from}
               onChange={(event) => {
                 setTo(event.target.value);
                 resetPagination();

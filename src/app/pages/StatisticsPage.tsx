@@ -1,7 +1,8 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
   drawsForGame,
   analyzeNumberCombinations,
+  getHistoricalDrawRange,
   historicalDrawSnapshot,
   historicalGameConfig,
   numberDistributionStatistics,
@@ -9,6 +10,7 @@ import {
   rankNumberFrequencies,
   type HistoricalGameId,
 } from '../../data/history/historicalDraws';
+import { refreshLatestHistoricalDraws } from '../../data/history/refreshLatestDraws';
 import { useI18n } from '../../i18n/I18nContext';
 
 const gameIds = Object.keys(historicalGameConfig) as HistoricalGameId[];
@@ -26,9 +28,30 @@ export function StatisticsPage({ onViewAll }: StatisticsPageProps) {
   const { language, locale, t } = useI18n();
   const [gameId, setGameId] = useState<HistoricalGameId>('lotto-max');
   const [kind, setKind] = useState<'main' | 'bonus'>('main');
-  const [from, setFrom] = useState(historicalDrawSnapshot.range.from);
-  const [to, setTo] = useState(historicalDrawSnapshot.range.to);
+  const [dateRange, setDateRange] = useState(getHistoricalDrawRange);
+  const [from, setFrom] = useState(() => getHistoricalDrawRange().from);
+  const [to, setTo] = useState(() => getHistoricalDrawRange().to);
+  const [refreshState, setRefreshState] = useState<'checking' | 'ready' | 'error'>('checking');
+  const [newDraws, setNewDraws] = useState(0);
   const [combinationSize, setCombinationSize] = useState(2);
+  useEffect(() => {
+    let mounted = true;
+    void refreshLatestHistoricalDraws()
+      .then(({ added }) => {
+        if (!mounted) return;
+        const latestRange = getHistoricalDrawRange();
+        setDateRange(latestRange);
+        setTo(latestRange.to);
+        setNewDraws(added);
+        setRefreshState('ready');
+      })
+      .catch(() => {
+        if (mounted) setRefreshState('error');
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
   const validRange = Boolean(from && to && from <= to);
   const draws = useMemo(
     () => (validRange ? drawsForGame(gameId, from, to) : []),
@@ -82,20 +105,37 @@ export function StatisticsPage({ onViewAll }: StatisticsPageProps) {
       </header>
 
       <section className="stats-shell" aria-labelledby="stats-game-title">
+        <p className="history-refresh-status" role="status">
+          {refreshState === 'checking'
+            ? fr
+              ? 'Vérification des derniers tirages officiels…'
+              : 'Checking for the latest official draws…'
+            : refreshState === 'error'
+              ? fr
+                ? 'Impossible de vérifier les derniers tirages; les données locales sont affichées.'
+                : 'Could not check for newer draws; showing locally saved data.'
+              : newDraws > 0
+                ? fr
+                  ? `${newDraws} nouveau(x) tirage(s) officiel(s) ajouté(s).`
+                  : `${newDraws} new official draw${newDraws === 1 ? '' : 's'} added.`
+                : fr
+                  ? 'Les résultats officiels sont à jour.'
+                  : 'Official results are up to date.'}
+        </p>
         <form className="date-range-filter" onSubmit={(event) => event.preventDefault()}>
           <div>
             <strong>{fr ? 'Période personnalisée' : 'Custom date range'}</strong>
             <span>
               {fr
-                ? `Les données locales couvrent la période du ${historicalDrawSnapshot.range.from} au ${historicalDrawSnapshot.range.to}`
-                : `Local data covers ${historicalDrawSnapshot.range.from} to ${historicalDrawSnapshot.range.to}`}
+                ? `Les données locales couvrent la période du ${dateRange.from} au ${dateRange.to}`
+                : `Local data covers ${dateRange.from} to ${dateRange.to}`}
             </span>
           </div>
           <label>
             {fr ? 'Du' : 'From'}
             <input
-              max={historicalDrawSnapshot.range.to}
-              min={historicalDrawSnapshot.range.from}
+              max={dateRange.to}
+              min={dateRange.from}
               onChange={(event) => setFrom(event.target.value)}
               type="date"
               value={from}
@@ -104,8 +144,8 @@ export function StatisticsPage({ onViewAll }: StatisticsPageProps) {
           <label>
             {fr ? 'Au' : 'To'}
             <input
-              max={historicalDrawSnapshot.range.to}
-              min={historicalDrawSnapshot.range.from}
+              max={dateRange.to}
+              min={dateRange.from}
               onChange={(event) => setTo(event.target.value)}
               type="date"
               value={to}
@@ -113,8 +153,8 @@ export function StatisticsPage({ onViewAll }: StatisticsPageProps) {
           </label>
           <button
             onClick={() => {
-              setFrom(historicalDrawSnapshot.range.from);
-              setTo(historicalDrawSnapshot.range.to);
+              setFrom(dateRange.from);
+              setTo(dateRange.to);
             }}
             type="button"
           >
