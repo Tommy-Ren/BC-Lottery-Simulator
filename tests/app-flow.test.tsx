@@ -10,8 +10,8 @@ afterEach(cleanup);
 
 async function finishQuickPick(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: 'Quick Pick' }));
-  await user.click(screen.getByRole('button', { name: '继续' }));
-  await user.click(screen.getByRole('button', { name: '确认购买' }));
+  await user.click(screen.getByRole('button', { name: 'Continue' }));
+  await user.click(screen.getByRole('button', { name: 'Confirm Purchase' }));
 }
 
 describe('BC/49 purchase flow', () => {
@@ -22,18 +22,18 @@ describe('BC/49 purchase flow', () => {
     const gameHeading = screen.getByRole('heading', { name: 'BC/49' });
     const gameCard = gameHeading.closest('article');
     expect(gameCard).not.toBeNull();
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /购买彩票/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Buy Tickets/ }));
 
     await finishQuickPick(user);
 
-    expect(screen.getByRole('button', { name: /我的票据 1/ })).toBeInTheDocument();
-    expect(screen.getByLabelText(/账户.*999\.00/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /My Tickets 1/ })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Account.*999\.00/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
-    expect(screen.getByRole('heading', { name: '我的票据' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
+    expect(screen.getByRole('heading', { name: 'My Tickets' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'BC/49' })).toBeInTheDocument();
     expect(screen.getByText('bc-49-sim-001')).toBeInTheDocument();
-    expect(screen.getByText('待开奖')).toBeInTheDocument();
+    expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 });
 
@@ -43,9 +43,9 @@ describe('Sprint 3 purchase flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'Daily Grand' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /购买彩票/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Buy Tickets/ }));
     await finishQuickPick(user);
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
 
     expect(screen.getByRole('heading', { name: 'Daily Grand' })).toBeInTheDocument();
     expect(screen.getByTitle('GRAND NUMBER')).toHaveTextContent(/^G[1-7]$/);
@@ -57,17 +57,17 @@ describe('Sprint 3 purchase flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'Lotto Max' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /购买彩票/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Buy Tickets/ }));
 
-    await user.click(screen.getByRole('button', { name: '选择号码' }));
+    await user.click(screen.getByRole('button', { name: 'Choose Numbers' }));
     expect(screen.getAllByRole('button', { name: /Play 1 · Selection [A-D]/ })).toHaveLength(4);
-    await user.click(screen.getByRole('button', { name: /全部自动选号/ }));
-    await user.click(screen.getByRole('button', { name: '继续' }));
-    await user.click(screen.getByRole('button', { name: '继续' }));
-    await user.click(screen.getByRole('button', { name: '确认购买' }));
+    await user.click(screen.getByRole('button', { name: /Auto Pick All Numbers/ }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm Purchase' }));
 
-    expect(screen.getByLabelText(/账户.*994\.00/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
+    expect(screen.getByLabelText(/Account.*994\.00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
     expect(screen.getAllByText(/Play 1 · Selection [A-D]/)).toHaveLength(4);
   });
 
@@ -76,12 +76,12 @@ describe('Sprint 3 purchase flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'Lotto 6/49' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /购买彩票/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Buy Tickets/ }));
     await finishQuickPick(user);
-    await user.click(screen.getByRole('button', { name: '模拟开奖' }));
+    await user.click(screen.getByRole('button', { name: 'Simulate Draw' }));
 
-    expect(screen.getByRole('heading', { name: '奖球开奖完成' })).toBeInTheDocument();
-    expect(screen.getByText(/抽中(?: Gold Ball|白球)/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gold Ball draw complete' })).toBeInTheDocument();
+    expect(screen.getByText(/Drawn:.*(?:Gold Ball|White Ball)/)).toBeInTheDocument();
   });
 });
 
@@ -91,30 +91,30 @@ describe('Sprint 4 Keno flow', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'Keno' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /开始游戏/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Play Game/ }));
 
-    const settings = screen.getByRole('region', { name: 'Keno 玩法设置' });
+    const settings = screen.getByRole('region', { name: 'Keno play settings' });
     await user.click(within(settings).getByRole('button', { name: '10' }));
     await user.click(within(settings).getByRole('button', { name: '$2.00' }));
-    await user.click(within(settings).getByRole('spinbutton', { name: /连续期数/ }));
+    await user.click(within(settings).getByRole('spinbutton', { name: /Number of draws/ }));
     await user.keyboard('{Control>}a{/Control}3');
     await finishQuickPick(user);
 
-    expect(screen.getByLabelText(/账户.*994\.00/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '模拟开奖' }));
-    expect(screen.getByRole('button', { name: '跳过动画' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '跳过动画' }));
-    expect(within(screen.getByLabelText('开奖号码')).getAllByText(/^\d+$/)).toHaveLength(20);
+    expect(screen.getByLabelText(/Account.*994\.00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Simulate Draw' }));
+    expect(screen.getByRole('button', { name: 'Skip animation' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Skip animation' }));
+    expect(within(screen.getByLabelText('Winning numbers')).getAllByText(/^\d+$/)).toHaveLength(20);
 
-    await user.click(screen.getByRole('button', { name: '开始下一期' }));
-    await user.click(screen.getByRole('button', { name: '模拟开奖' }));
-    await user.click(screen.getByRole('button', { name: '跳过动画' }));
-    await user.click(screen.getByRole('button', { name: '开始下一期' }));
-    await user.click(screen.getByRole('button', { name: '模拟开奖' }));
-    await user.click(screen.getByRole('button', { name: '跳过动画' }));
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
-    expect(screen.getByText('已结算')).toBeInTheDocument();
-    expect(screen.getByText(/已结算 3 \/ 3 期/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Start next draw' }));
+    await user.click(screen.getByRole('button', { name: 'Simulate Draw' }));
+    await user.click(screen.getByRole('button', { name: 'Skip animation' }));
+    await user.click(screen.getByRole('button', { name: 'Start next draw' }));
+    await user.click(screen.getByRole('button', { name: 'Simulate Draw' }));
+    await user.click(screen.getByRole('button', { name: 'Skip animation' }));
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
+    expect(screen.getByText('Settled')).toBeInTheDocument();
+    expect(screen.getByText(/Settled 3 \/ 3 draws/)).toBeInTheDocument();
   });
 });
 
@@ -124,19 +124,19 @@ describe('Sprint 5 add-on flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'BC/49' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /购买彩票/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Buy Tickets/ }));
     await user.click(screen.getByRole('button', { name: 'Quick Pick' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'EXTRA 数量' }), '1');
-    await user.click(screen.getByRole('button', { name: '继续' }));
-    await user.click(screen.getByRole('button', { name: '确认购买' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'EXTRA quantity' }), '1');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm Purchase' }));
 
-    expect(screen.getByLabelText(/账户.*998\.00/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '模拟开奖' }));
-    expect(screen.getByRole('heading', { name: '附加开奖审计' })).toBeInTheDocument();
-    expect(screen.getByText(/EXTRA 开奖：/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
+    expect(screen.getByLabelText(/Account.*998\.00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Simulate Draw' }));
+    expect(screen.getByRole('heading', { name: 'Add-on draw audit' })).toBeInTheDocument();
+    expect(screen.getByText(/EXTRA draw:/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
     expect(screen.getByText('EXTRA × 1')).toBeInTheDocument();
-    expect(screen.getByText('EXTRA 号码')).toBeInTheDocument();
+    expect(screen.getByText('EXTRA numbers')).toBeInTheDocument();
   });
 
   it('expands BC/49 Combo 7 into seven paid selections', async () => {
@@ -144,12 +144,12 @@ describe('Sprint 5 add-on flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'BC/49' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /购买彩票/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Buy Tickets/ }));
     await user.selectOptions(screen.getByRole('combobox', { name: 'Combo Play' }), '7');
     await finishQuickPick(user);
 
-    expect(screen.getByLabelText(/账户.*993\.00/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
+    expect(screen.getByLabelText(/Account.*993\.00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
     expect(screen.getByText('Combo 7')).toBeInTheDocument();
     expect(screen.getAllByText(/^Play [1-7]$/)).toHaveLength(7);
   });
@@ -159,15 +159,15 @@ describe('Sprint 5 add-on flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'Keno' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /开始游戏/ }));
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Play Game/ }));
     await user.click(screen.getByRole('button', { name: 'Quick Pick' }));
     await user.click(screen.getByRole('checkbox', { name: /Keno Bonus/ }));
-    await user.click(screen.getByRole('button', { name: '继续' }));
-    await user.click(screen.getByRole('button', { name: '确认购买' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm Purchase' }));
 
-    expect(screen.getByLabelText(/账户.*998\.00/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '模拟开奖' }));
-    expect(screen.getByText(/Keno Bonus：×/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Account.*998\.00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Simulate Draw' }));
+    expect(screen.getByText(/Keno Bonus: ×/)).toBeInTheDocument();
   });
 
   it('purchases Keno Pattern Play as a fixed $2 twenty-number selection', async () => {
@@ -175,13 +175,13 @@ describe('Sprint 5 add-on flows', () => {
     render(<App />);
 
     const gameCard = screen.getByRole('heading', { name: 'Keno' }).closest('article');
-    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /开始游戏/ }));
-    const settings = screen.getByRole('region', { name: 'Keno 玩法设置' });
+    await user.click(within(gameCard as HTMLElement).getByRole('button', { name: /Play Game/ }));
+    const settings = screen.getByRole('region', { name: 'Keno play settings' });
     await user.click(within(settings).getByRole('checkbox', { name: /Pattern Play/ }));
     await finishQuickPick(user);
 
-    expect(screen.getByLabelText(/账户.*998\.00/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /我的票据 1/ }));
+    expect(screen.getByLabelText(/Account.*998\.00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /My Tickets 1/ }));
     expect(screen.getByText('Pattern Play')).toBeInTheDocument();
   });
 });

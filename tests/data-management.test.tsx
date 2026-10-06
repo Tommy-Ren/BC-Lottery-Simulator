@@ -33,15 +33,15 @@ describe('data management UI', () => {
     const user = userEvent.setup();
     render(<App repository={repository} />);
 
-    expect(await screen.findByLabelText(/账户.*123\.45/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /账户.*123\.45/ }));
-    await user.click(screen.getByRole('button', { name: /我的账户/ }));
-    expect(screen.getByRole('dialog', { name: '存档与数据' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '重置所有数据' }));
-    await user.click(screen.getByRole('button', { name: '确认永久重置' }));
+    expect(await screen.findByLabelText(/Account.*123\.45/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Account.*123\.45/ }));
+    await user.click(screen.getByRole('button', { name: /My Account/ }));
+    expect(screen.getByRole('dialog', { name: 'Save & Data' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reset All Data' }));
+    await user.click(screen.getByRole('button', { name: 'Permanently Reset' }));
 
     expect(clear).toHaveBeenCalledOnce();
-    expect(await screen.findByLabelText(/账户.*1,000\.00/)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/Account.*1,000\.00/)).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

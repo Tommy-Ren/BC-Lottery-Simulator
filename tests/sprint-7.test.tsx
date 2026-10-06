@@ -47,15 +47,15 @@ describe('Sprint 7 interface', () => {
     const user = userEvent.setup();
     render(<App repository={emptyRepository} />);
 
-    await user.click(screen.getByRole('button', { name: '历史统计' }));
-    expect(screen.getByRole('heading', { name: '历史中奖号码统计' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Number Stats' }));
+    expect(screen.getByRole('heading', { name: 'Winning Number Statistics' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Lotto Max' })).toHaveAttribute('aria-selected', 'true');
     await user.click(screen.getByRole('tab', { name: 'BC/49' }));
     expect(screen.getByRole('tab', { name: 'BC/49' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByText(/历史频率不改变/)).toBeInTheDocument();
+    expect(screen.getByText(/Past frequency does not change/)).toBeInTheDocument();
   });
 
-  it('switches the primary experience to English and remembers the choice', async () => {
+  it('starts in English, switches to French and remembers the choice', async () => {
     const user = userEvent.setup();
     render(
       <I18nProvider>
@@ -63,36 +63,37 @@ describe('Sprint 7 interface', () => {
       </I18nProvider>,
     );
 
-    await user.click(screen.getByRole('button', { name: 'English' }));
     expect(screen.getByRole('heading', { name: 'Play Lottery' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Number Stats' })).toBeInTheDocument();
-    expect(window.localStorage.getItem('bc-lottery-language')).toBe('en');
+    await user.click(screen.getByRole('button', { name: 'Français' }));
+    expect(screen.getByRole('heading', { name: 'Jouer à la loterie' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Statistiques des numéros' })).toBeInTheDocument();
+    expect(window.localStorage.getItem('bc-lottery-language')).toBe('fr');
   });
 
   it('opens on click, accepts Quick Deposit and closes when clicking outside', async () => {
     const user = userEvent.setup();
     render(<App repository={emptyRepository} />);
 
-    await user.click(screen.getByRole('button', { name: /账户.*1,000\.00/ }));
-    expect(screen.getByRole('dialog', { name: '本地账户' })).toBeInTheDocument();
-    const amount = screen.getByRole('spinbutton', { name: '存入虚拟 Cash' });
+    await user.click(screen.getByRole('button', { name: /Account.*1,000\.00/ }));
+    expect(screen.getByRole('dialog', { name: 'Local account' })).toBeInTheDocument();
+    const amount = screen.getByRole('spinbutton', { name: 'Add virtual Cash' });
     await user.clear(amount);
     await user.type(amount, '250.50');
     await user.click(screen.getByRole('button', { name: 'Quick Deposit' }));
-    expect(screen.getByLabelText(/账户.*1,250\.50/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Account.*1,250\.50/)).toBeInTheDocument();
     expect(screen.getAllByText('$0.00', { selector: 'strong' })).toHaveLength(2);
 
-    await user.click(screen.getByRole('heading', { name: '选择彩票' }));
-    expect(screen.queryByRole('dialog', { name: '本地账户' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('heading', { name: 'Play Lottery' }));
+    expect(screen.queryByRole('dialog', { name: 'Local account' })).not.toBeInTheDocument();
   });
 
   it('filters statistics with a user-defined date range', async () => {
     const user = userEvent.setup();
     render(<App repository={emptyRepository} />);
 
-    await user.click(screen.getByRole('button', { name: '历史统计' }));
-    const from = screen.getByLabelText('开始日期');
-    const to = screen.getByLabelText('结束日期');
+    await user.click(screen.getByRole('button', { name: 'Number Stats' }));
+    const from = screen.getByLabelText('From');
+    const to = screen.getByLabelText('To');
     await user.clear(from);
     await user.type(from, '2026-09-01');
     await user.clear(to);

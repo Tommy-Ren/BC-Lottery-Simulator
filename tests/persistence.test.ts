@@ -30,9 +30,9 @@ describe('versioned game-state persistence', () => {
   });
 
   it('rejects malformed JSON, unknown schemas and an unbalanced wallet', () => {
-    expect(() => parseGameStateJson('{')).toThrow('文件不是有效的 JSON');
+    expect(() => parseGameStateJson('{')).toThrow('The file is not valid JSON.');
     expect(() => parseGameStateJson(JSON.stringify({ schemaVersion: 99 }))).toThrow(
-      '不支持的存档 schema 版本',
+      'Unsupported save schema version:',
     );
 
     const snapshot = createGameStateSnapshot(createInitialGameState());
@@ -40,7 +40,9 @@ describe('versioned game-state persistence', () => {
       state: { ticketStore: { wallet: { balanceCents: number } } };
     };
     corrupted.state.ticketStore.wallet.balanceCents = 1;
-    expect(() => parseGameStateJson(JSON.stringify(corrupted))).toThrow('余额与钱包账本不一致');
+    expect(() => parseGameStateJson(JSON.stringify(corrupted))).toThrow(
+      'The saved balance does not match the wallet ledger.',
+    );
   });
 
   it('saves, loads and clears the current snapshot in IndexedDB', async () => {
