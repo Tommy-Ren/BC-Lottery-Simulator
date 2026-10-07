@@ -4,6 +4,8 @@ A browser-based simulator for five Canadian lottery games: Lotto Max, Lotto 6/49
 
 > This project is not affiliated with or endorsed by PlayNow or BCLC. It does not sell tickets, connect to real accounts or payment services, or award redeemable prizes. All balances, purchases, and winnings are virtual.
 
+Try the simulator: [bc-lottery-simulator.vercel.app](https://bc-lottery-simulator.vercel.app/)
+
 ## Features
 
 - English and Canadian French interface; English is the default. Language preference is saved in this browser.
@@ -52,14 +54,9 @@ The synchronizer uses publicly accessible PlayNow results data. Review the gener
 
 Historical frequency and co-occurrence describe past draws only. They do not change the probability of a future independent draw or provide a reliable prediction.
 
-## Documentation
-
-Start with the [documentation index](docs/README.md). The project charter, product decisions, rules baseline, sprint records, and release/rollback instructions are maintained in `docs/`.
-
 ## Project layout
 
 ```text
-docs/                    Project planning, rules baseline, and sprint notes
 public/                  Lottery logos, banners, and other visual assets
 src/app/                 Application assembly and pages
 src/components/           Shared interface components
