@@ -18,6 +18,14 @@ const games: ReadonlyArray<{
 
 let activeRefresh: Promise<{ readonly added: number }> | null = null;
 
+function isGoldBallRecord(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Array.isArray((value as Record<string, unknown>).drawNbrs)
+  );
+}
+
 function vancouverToday(): string {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Vancouver',
@@ -56,13 +64,35 @@ async function fetchDraw(
   const response = await fetch(`/api/history/draw/${game.id}/${date}`, {
     headers: { Accept: 'application/json' },
   });
-  if (response.status === 404) return null;
+  // The official feed uses 400 as well as 404 when a valid scheduled draw has not been posted yet.
+  if (response.status === 400 || response.status === 404) return null;
   if (!response.ok) throw new Error(`Could not retrieve ${game.id} results for ${date}.`);
   const result: unknown = await response.json();
   if (typeof result !== 'object' || result === null) return null;
   const record = result as Record<string, unknown>;
   if (!Array.isArray(record.drawNbrs) || record.drawNbrs.length === 0) return null;
   if (!record.drawNbrs.every((number) => Number.isInteger(number))) return null;
+  const bonusDraws = Array.isArray(record.bonusDraws)
+    ? record.bonusDraws.filter(
+        (draw): draw is number[] =>
+          Array.isArray(draw) && draw.every((number) => Number.isInteger(number)),
+      )
+    : [];
+  const breakdown = Array.isArray(record.gameBreakdown)
+    ? record.gameBreakdown.filter(
+        (entry): entry is Record<string, unknown> => typeof entry === 'object' && entry !== null,
+      )
+    : [];
+  const distinctSequenceCount = (description: string) =>
+    new Set(
+      breakdown
+        .filter((entry) => entry.desc === description && Number.isInteger(entry.seqNbr))
+        .map((entry) => entry.seqNbr),
+    ).size;
+  const maxmillionsCount = distinctSequenceCount('MAXMILLION');
+  const maxplusCount = distinctSequenceCount('MAXPLUS');
+  const maxmillionsDraws = bonusDraws.slice(0, maxmillionsCount);
+  const maxplusDraws = bonusDraws.slice(maxmillionsCount, maxmillionsCount + maxplusCount);
 
   return {
     gameId: game.id,
@@ -73,6 +103,27 @@ async function fetchDraw(
     extraNumbers: Array.isArray(record.extraNbrs)
       ? record.extraNbrs.filter((number): number is number => Number.isInteger(number))
       : [],
+    ...(maxmillionsDraws.length > 0 ? { maxmillionsDraws } : {}),
+    ...(maxplusDraws.length > 0 ? { maxplusDraws } : {}),
+    ...(() => {
+      const goldBallRecord = Array.isArray(record.gpNumbers)
+        ? (record.gpNumbers as unknown[]).find(isGoldBallRecord)
+        : undefined;
+      if (!goldBallRecord || !Array.isArray(goldBallRecord.drawNbrs)) return {};
+      const digits = goldBallRecord.drawNbrs.filter((number): number is number =>
+        Number.isInteger(number),
+      );
+      if (digits.length < 2) return {};
+      const code = digits.map((number) => number.toString()).join('');
+      return {
+        goldBall: {
+          number: `${code.slice(0, -2)}-${code.slice(-2)}`,
+          whiteBallPrizeDollars: Number(goldBallRecord.whiteBallPrizeAmount) || 1_000_000,
+          goldBallPrizeDollars: Number(goldBallRecord.goldBallPrizeAmount) || 0,
+          goldBallDrawn: goldBallRecord.goldBallDrawn === true,
+        },
+      };
+    })(),
   };
 }
 
@@ -83,9 +134,12 @@ async function refresh(): Promise<{ readonly added: number }> {
     const lastDrawDate = draws
       .filter((draw) => draw.gameId === game.id)
       .reduce((latest, draw) => (draw.drawDate > latest ? draw.drawDate : latest), '');
-    return lastDrawDate
-      ? scheduledDatesAfter(lastDrawDate, today, game.weekdays).map((date) => ({ game, date }))
-      : [];
+    if (!lastDrawDate) return [];
+    const missingDraws = scheduledDatesAfter(lastDrawDate, today, game.weekdays).map((date) => ({
+      game,
+      date,
+    }));
+    return [{ game, date: lastDrawDate }, ...missingDraws];
   });
 
   const found: HistoricalDraw[] = [];

@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { lotteryDefinitions } from '../../data/definitions/lotteries';
 import { drawsForGame, type HistoricalGameId } from '../../data/history/historicalDraws';
+import { refreshLatestHistoricalDraws } from '../../data/history/refreshLatestDraws';
 import type { PlayableLotteryId } from '../../domain/lottery/tickets';
 import { localizeGame, useI18n } from '../../i18n/I18nContext';
 import { formatMoney } from '../formatters';
@@ -17,6 +19,29 @@ export function LobbyPage({ onPlay, onRules }: LobbyPageProps) {
   const featured = lotteryDefinitions.filter(
     (definition) => definition.id === 'lotto-max' || definition.id === 'lotto-649',
   );
+  const [, setHistoryRevision] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    void refreshLatestHistoricalDraws()
+      .then(() => {
+        if (active) setHistoryRevision((revision) => revision + 1);
+      })
+      .catch(() => {
+        // Keep the bundled and previously cached results visible if the official feed is offline.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const formatDrawDate = (date: string) =>
+    new Intl.DateTimeFormat(language === 'fr' ? 'fr-CA' : 'en-CA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(`${date}T12:00:00Z`));
 
   return (
     <main className="lottery-home">
@@ -171,27 +196,132 @@ export function LobbyPage({ onPlay, onRules }: LobbyPageProps) {
                   className={`latest-card latest-card--${definition.id}`}
                   key={definition.id}
                 >
-                  <div
-                    className={`lottery-logo lottery-logo--${definition.id}`}
-                    aria-hidden="true"
-                  />
-                  <span>
-                    {draw.drawDate} · #{draw.drawNumber}
+                  <div className="latest-card__brand">
+                    <span
+                      className={`latest-card__logo lottery-logo--${definition.id}`}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <span className="latest-card__date">
+                    {definition.id === 'lotto-max'
+                      ? `${fr ? 'Résultats Lotto Max' : 'Lotto Max Results'}: ${formatDrawDate(draw.drawDate)}`
+                      : definition.id === 'lotto-649'
+                        ? `${fr ? 'Résultats Lotto 6/49' : 'Lotto 6/49 Results'}: ${formatDrawDate(draw.drawDate)}`
+                        : definition.id === 'daily-grand'
+                          ? `${fr ? 'Date du tirage' : 'Draw Date'}: ${formatDrawDate(draw.drawDate)}`
+                          : `${fr ? 'Résultats du tirage' : 'Draw Results'}: ${formatDrawDate(draw.drawDate)}`}
+                    {' · '}#{draw.drawNumber}
                   </span>
+                  {definition.id === 'lotto-649' && (
+                    <strong className="latest-card__classic">CLASSIC</strong>
+                  )}
                   <div className="latest-card__numbers">
                     {draw.mainNumbers.map((number) => (
                       <strong key={number}>{number.toString().padStart(2, '0')}</strong>
                     ))}
                   </div>
                   {draw.bonusNumber !== undefined && (
-                    <p>BONUS {draw.bonusNumber.toString().padStart(2, '0')}</p>
+                    <p className="latest-card__bonus">
+                      {definition.id === 'daily-grand'
+                        ? fr
+                          ? 'NUMÉRO GRAND'
+                          : 'GRAND NUMBER'
+                        : 'BONUS'}{' '}
+                      {draw.bonusNumber.toString().padStart(2, '0')}
+                    </p>
                   )}
+                  {draw.goldBall && (
+                    <div className="latest-card__gold-ball">
+                      <img src="/icon/649-goldball-logo-blue.svg" alt="Gold Ball" />
+                      <span>
+                        <img src="/icon/whiteball.svg" alt="" />
+                        <strong>
+                          ${draw.goldBall.whiteBallPrizeDollars.toLocaleString(language)}
+                        </strong>
+                        <i aria-hidden="true" />
+                        <b>{draw.goldBall.number}</b>
+                      </span>
+                    </div>
+                  )}
+                  {draw.extraNumbers.length > 0 && (
+                    <div
+                      className="latest-card__extra"
+                      aria-label={fr ? 'Numéros Extra' : 'Extra numbers'}
+                    >
+                      <span className="extra-logo" aria-label="Extra" />
+                      <div>
+                        {draw.extraNumbers.map((number) => (
+                          <span key={number}>{number.toString().padStart(2, '0')}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {definition.id === 'lotto-max' &&
+                    (draw.maxmillionsDraws?.length || draw.maxplusDraws?.length) && (
+                      <div className="latest-card__supplementary">
+                        {draw.maxmillionsDraws && draw.maxmillionsDraws.length > 0 && (
+                          <details>
+                            <summary>
+                              <span>✚</span> MAXMILLIONS
+                              <u>
+                                {draw.maxmillionsDraws.length} {fr ? 'tirages' : 'Results'}
+                              </u>
+                            </summary>
+                            <div className="latest-card__supplementary-list">
+                              {draw.maxmillionsDraws.map((numbers, index) => (
+                                <p key={`maxmillions-${index}`}>
+                                  <small>{index + 1}</small>
+                                  {numbers.map((number) => (
+                                    <b key={number}>{number.toString().padStart(2, '0')}</b>
+                                  ))}
+                                </p>
+                              ))}
+                            </div>
+                          </details>
+                        )}
+                        {draw.maxplusDraws && draw.maxplusDraws.length > 0 && (
+                          <details>
+                            <summary>
+                              <span>✚</span> $100,000 MAXPLUS
+                              <u>
+                                {draw.maxplusDraws.length} {fr ? 'tirages' : 'Results'}
+                              </u>
+                            </summary>
+                            <div className="latest-card__supplementary-list">
+                              {draw.maxplusDraws.map((numbers, index) => (
+                                <p key={`maxplus-${index}`}>
+                                  <small>{index + 1}</small>
+                                  {numbers.map((number) => (
+                                    <b key={number}>{number.toString().padStart(2, '0')}</b>
+                                  ))}
+                                </p>
+                              ))}
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    )}
                   <button onClick={() => onPlay(definition.id)} type="button">
                     {fr ? 'Acheter des billets' : 'Buy Tickets'}
                   </button>
                 </article>
               );
             })}
+          <article className="latest-card latest-card--keno latest-card--keno-promo">
+            <div className="latest-card__brand">
+              <span className="latest-card__logo lottery-logo--keno" aria-hidden="true" />
+            </div>
+            <span className="latest-card__date">
+              {fr ? 'Keno · Tirages toutes les 3 min 30 s' : 'Keno · Draws every 3 min 30 sec'}
+            </span>
+            <div className="latest-card__keno-copy">
+              <strong>{fr ? '20 numéros tirés' : '20 numbers drawn'}</strong>
+              <span>{fr ? 'Parmi les numéros 1 à 80' : 'From numbers 1 to 80'}</span>
+            </div>
+            <button onClick={() => onPlay('keno')} type="button">
+              {fr ? 'Jouer à Keno' : 'Play Keno'}
+            </button>
+          </article>
         </div>
       </section>
     </main>

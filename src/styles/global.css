@@ -3358,29 +3358,43 @@ body {
 .lottery-logo {
   width: 150px;
   height: 95px;
-  background-position: center;
+  position: relative;
+  background: none;
+}
+
+.lottery-logo::before,
+.latest-card__logo::before {
+  background-image: url('/icon/lottery-bc-logos-md.png');
+  background-position: center -2px;
   background-repeat: no-repeat;
+  background-size: 90px 960px;
+  content: '';
+  height: 56px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+}
+
+.lottery-logo--lotto-649::before {
+  background-position: center -62px;
+}
+
+.lottery-logo--bc-49::before {
+  background-position: center -122px;
+}
+
+.lottery-logo--daily-grand::before {
+  background-position: center -842px;
+}
+
+.lottery-logo--keno::before {
+  background-image: url('/icon/lottery-logo-Keno.png');
+  background-position: center center;
   background-size: contain;
-}
-
-.lottery-logo--lotto-max {
-  background-image: url('/icon/lmax-2.0-logo-small.png');
-}
-
-.lottery-logo--lotto-649 {
-  background-image: url('/icon/logo-lotto-649.svg');
-}
-
-.lottery-logo--bc-49 {
-  background-image: url('/icon/tile-BC49-3x2.png');
-}
-
-.lottery-logo--daily-grand {
-  background-image: url('/icon/tile-daily-grand-3x2.png');
-}
-
-.lottery-logo--keno {
-  background-image: url('/icon/tile-Keno-3x2.png');
+  height: 80px;
+  width: 100px;
 }
 
 .home-games,
@@ -3439,7 +3453,7 @@ body {
   border: 11px solid #f0f1f2;
   border-radius: 50%;
   background-color: #fff;
-  background-size: 118px auto;
+  background-size: 90px 960px;
 }
 
 .home-game-card h2 {
@@ -3528,28 +3542,39 @@ body {
   text-align: center;
 }
 
-.latest-card > .lottery-logo {
+.latest-card__brand {
+  display: grid;
+  min-height: 120px;
+  place-items: center;
   width: 100%;
-  height: 120px;
-  background-size: 135px auto;
 }
 
-.latest-card--lotto-max > .lottery-logo {
+.latest-card__logo {
+  display: block;
+  height: 88px;
+  position: relative;
+  width: 150px;
+}
+
+.latest-card--lotto-max .latest-card__brand {
   background-color: #80c600;
 }
-.latest-card--lotto-649 > .lottery-logo {
+.latest-card--lotto-649 .latest-card__brand {
   background-color: #063d70;
 }
-.latest-card--bc-49 > .lottery-logo {
+.latest-card--bc-49 .latest-card__brand {
   background-color: #b61d22;
 }
-.latest-card--daily-grand > .lottery-logo {
+.latest-card--daily-grand .latest-card__brand {
   background-color: #f8a900;
 }
+.latest-card--keno .latest-card__brand {
+  background-color: #d90000;
+}
 
-.latest-card > span {
+.latest-card > .latest-card__date {
   width: 100%;
-  padding: 0.45rem;
+  padding: 0.45rem 0.35rem;
   color: #fff;
   background: #252525;
   font-size: 0.68rem;
@@ -3568,9 +3593,169 @@ body {
   font-size: 1.1rem;
 }
 
-.latest-card > p {
-  margin: 0.7rem 0;
+.latest-card__classic {
+  color: #0060ad;
+  font-size: 0.82rem;
+  margin-top: 1rem;
+}
+
+.latest-card > .latest-card__bonus {
+  margin: 0.7rem 0 0.9rem;
   font-weight: 900;
+}
+
+.latest-card__gold-ball {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: center;
+  margin: 0.2rem 0 0.75rem;
+  padding: 0.85rem 0.65rem;
+  width: calc(100% - 2rem);
+  border-radius: 0.35rem;
+  background: #fff;
+  box-shadow: 0 2px 12px #00000012;
+}
+
+.latest-card__gold-ball > img {
+  height: 1.2rem;
+  max-width: 9rem;
+}
+
+.latest-card__gold-ball > span {
+  align-items: center;
+  border: 1px solid #d5d8da;
+  border-radius: 0.25rem;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.latest-card__gold-ball > span > img {
+  height: 1rem;
+  width: 1rem;
+}
+
+.latest-card__gold-ball i {
+  background: #d5d8da;
+  height: 1.2rem;
+  width: 1px;
+}
+
+.latest-card__gold-ball b {
+  font-size: 0.88rem;
+}
+
+.latest-card__extra {
+  align-items: center;
+  display: flex;
+  gap: 0.65rem;
+  justify-content: center;
+  margin: auto 0 1rem;
+  min-height: 2.1rem;
+}
+
+.extra-logo {
+  background: url('/icon/lottery-bc-logos-md.png') center -125px / 45px 480px no-repeat;
+  display: inline-block;
+  flex: 0 0 45px;
+  height: 23px;
+  width: 45px;
+}
+
+.latest-card--keno-promo .latest-card__keno-copy {
+  display: grid;
+  gap: 0.55rem;
+  margin: auto 1rem;
+  padding: 1.25rem 0.75rem;
+}
+
+.latest-card__keno-copy strong {
+  font-size: 1.25rem;
+}
+
+.latest-card__keno-copy span {
+  color: #626a70;
+}
+
+.latest-card__extra > div {
+  color: #5b6268;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.latest-card__extra > div span {
+  font-size: 0.95rem;
+}
+
+.latest-card__supplementary {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.1rem 0 0.6rem;
+  padding: 0 0.75rem;
+  width: 100%;
+}
+
+.latest-card__supplementary details {
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background: #fff;
+  text-align: left;
+}
+
+.latest-card__supplementary summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 850;
+  list-style: none;
+}
+
+.latest-card__supplementary summary::-webkit-details-marker {
+  display: none;
+}
+
+.latest-card__supplementary summary > span {
+  align-items: center;
+  color: #73b52b;
+  display: inline-flex;
+  font-size: 1rem;
+}
+
+.latest-card__supplementary summary > u {
+  color: var(--red);
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.latest-card__supplementary-list {
+  border-top: 1px solid #eceeef;
+  max-height: 13rem;
+  overflow: auto;
+  padding: 0.35rem 0.65rem;
+}
+
+.latest-card__supplementary-list p {
+  align-items: center;
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.latest-card__supplementary-list small {
+  color: #6b737a;
+  margin-right: 0.3rem;
+}
+
+.latest-card__supplementary-list b {
+  font-size: 0.68rem;
 }
 
 .latest-card > button {
@@ -3879,7 +4064,7 @@ body {
   flex: 0 0 122px;
   border: 9px solid #f0f1f2;
   border-radius: 50%;
-  background-size: 100px auto;
+  background-size: 90px 960px;
 }
 
 .home-game-card--lotto-max .lottery-logo {
@@ -3957,22 +4142,21 @@ body {
   min-height: 460px;
 }
 
-.latest-card > .lottery-logo {
-  height: 120px;
+.latest-card__brand {
   flex: 0 0 120px;
 }
 
-.latest-card > p {
+.latest-card > .latest-card__bonus {
   min-height: 1.5rem;
+}
+
+.latest-card__extra {
+  margin-top: auto;
 }
 
 .latest-card > button {
   width: calc(100% - 2rem);
   margin: auto 1rem 1rem;
-}
-
-.latest-card:nth-child(4):last-child {
-  grid-column: 2;
 }
 
 @media (max-width: 900px) {
@@ -3982,10 +4166,6 @@ body {
 
   .latest-winner-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .latest-card:nth-child(4):last-child {
-    grid-column: auto;
   }
 }
 
@@ -4025,6 +4205,108 @@ body {
   padding-right: max(2rem, calc((100vw - 1500px) / 2));
 }
 
+.site-footer {
+  background: #303030;
+  color: #f5f5f5;
+  margin-top: 2rem;
+  padding: 2.8rem 1.5rem 2rem;
+}
+
+.site-footer__inner {
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.site-footer__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: clamp(2rem, 7vw, 6rem);
+  padding-bottom: 2.5rem;
+}
+
+.site-footer__column {
+  align-content: start;
+  display: grid;
+  justify-items: start;
+  gap: 0.85rem;
+}
+
+.site-footer__column h2 {
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  margin: 0 0 0.25rem;
+}
+
+.site-footer__column a {
+  align-items: center;
+  color: #f1f1f1;
+  display: inline-flex;
+  gap: 0.45rem;
+  text-decoration: none;
+}
+
+.site-footer__column a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.site-footer__column a:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #70e4d2;
+  outline-offset: 4px;
+}
+
+.site-footer__column a svg {
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
+.site-footer__column p {
+  color: #d0d0d0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0.35rem 0 0;
+  max-width: 24rem;
+}
+
+.site-footer__social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.site-footer__social-links a {
+  font-weight: 650;
+}
+
+.site-footer__social-links a svg {
+  height: 1.35rem;
+  width: 1.35rem;
+}
+
+.site-footer__bottom {
+  align-items: flex-start;
+  border-top: 1px solid #5b5b5b;
+  color: #d0d0d0;
+  display: flex;
+  font-size: 0.85rem;
+  gap: 1.5rem;
+  justify-content: space-between;
+  line-height: 1.6;
+  padding-top: 1.5rem;
+}
+
+.site-footer__bottom p {
+  margin: 0;
+  max-width: 58rem;
+}
+
+.site-footer__bottom span {
+  flex: 0 0 auto;
+}
+
 @media (max-width: 900px) {
   .jackpot-panel--lotto-max {
     padding-left: 2rem;
@@ -4043,5 +4325,20 @@ body {
 
   .jackpot-panel--lotto-max {
     padding-left: 1rem;
+  }
+
+  .site-footer {
+    padding: 2.25rem 1.1rem 1.5rem;
+  }
+
+  .site-footer__columns {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .site-footer__bottom {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }

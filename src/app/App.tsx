@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppHeader } from '../components/AppHeader';
 import { DataManagementPanel } from '../components/DataManagementPanel';
+import { SiteFooter } from '../components/SiteFooter';
 import { getLotteryDefinition } from '../data/definitions/lotteries';
 import { applyWalletCommand } from '../domain/economy/wallet';
 import { generateDraw } from '../domain/lottery/engine';
@@ -376,6 +377,7 @@ export function App({ repository = gameStateRepository }: AppProps) {
       <span aria-live="polite" className="visually-hidden">
         {saveStatus} {accountMessage}
       </span>
+      <SiteFooter />
       {dataPanelOpen && (
         <DataManagementPanel
           status={saveStatus}

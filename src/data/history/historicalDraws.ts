@@ -9,6 +9,14 @@ export interface HistoricalDraw {
   readonly mainNumbers: readonly number[];
   readonly bonusNumber?: number;
   readonly extraNumbers: readonly number[];
+  readonly maxmillionsDraws?: readonly (readonly number[])[];
+  readonly maxplusDraws?: readonly (readonly number[])[];
+  readonly goldBall?: {
+    readonly number: string;
+    readonly whiteBallPrizeDollars: number;
+    readonly goldBallPrizeDollars: number;
+    readonly goldBallDrawn: boolean;
+  };
 }
 
 export interface FrequencyEntry {
@@ -94,7 +102,11 @@ function isHistoricalDraw(value: unknown): value is HistoricalDraw {
     Array.isArray(draw.mainNumbers) &&
     draw.mainNumbers.every((number: unknown) => Number.isInteger(number)) &&
     Array.isArray(draw.extraNumbers) &&
-    draw.extraNumbers.every((number: unknown) => Number.isInteger(number))
+    draw.extraNumbers.every((number: unknown) => Number.isInteger(number)) &&
+    (draw.goldBall === undefined ||
+      (typeof draw.goldBall === 'object' &&
+        draw.goldBall !== null &&
+        typeof (draw.goldBall as Record<string, unknown>).number === 'string'))
   );
 }
 
@@ -114,7 +126,14 @@ function loadLiveDraws(): HistoricalDraw[] {
 let liveDraws = loadLiveDraws();
 
 export function getHistoricalDraws(): readonly HistoricalDraw[] {
-  return [...historicalDrawSnapshot.draws, ...liveDraws];
+  const merged = new Map<string, HistoricalDraw>();
+  for (const draw of historicalDrawSnapshot.draws) {
+    merged.set(`${draw.gameId}:${draw.drawDate}`, draw);
+  }
+  for (const draw of liveDraws) {
+    merged.set(`${draw.gameId}:${draw.drawDate}`, draw);
+  }
+  return [...merged.values()];
 }
 
 export function getHistoricalDrawRange(): { readonly from: string; readonly to: string } {
@@ -152,6 +171,9 @@ export function mergeLiveHistoricalDraws(incoming: readonly HistoricalDraw[]): n
         (left, right) => left - right,
       ),
       extraNumbers: Array.from(draw.extraNumbers as readonly number[]),
+      ...(draw.maxmillionsDraws ? { maxmillionsDraws: draw.maxmillionsDraws } : {}),
+      ...(draw.maxplusDraws ? { maxplusDraws: draw.maxplusDraws } : {}),
+      ...(draw.goldBall ? { goldBall: draw.goldBall } : {}),
     });
   }
   liveDraws = [...merged.values()].sort(
