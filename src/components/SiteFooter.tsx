@@ -41,8 +41,8 @@ export function SiteFooter() {
 
           <section className="site-footer__column" aria-labelledby="footer-about-title">
             <h2 id="footer-about-title">{fr ? 'À propos' : 'About'}</h2>
-            <a href="https://www.tianzeren.com/" target="_blank" rel="noreferrer">
-              TianzeRen.com <LinkIcon />
+            <a href="https://tommy-ren.github.io/" target="_blank" rel="noreferrer">
+              Tommy Ren Portfolio <LinkIcon />
             </a>
             <a href="https://www.tommyren.com/" target="_blank" rel="noreferrer">
               TommyRen.com <LinkIcon />
